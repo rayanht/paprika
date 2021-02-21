@@ -173,7 +173,7 @@ p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
 ```
 
-☠️ Important note on combining @data and @singleton ☠️
+#### ☠️ Important note on combining @data and @singleton ☠️
 
 When combining `@singleton` with `@data`, `@singleton` should come
 before `@data`. Combining them the other way around will work in most cases
