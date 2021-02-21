@@ -1,0 +1,136 @@
+import functools
+import time
+from concurrent.futures import ThreadPoolExecutor
+from multiprocessing import Process
+from threading import Thread
+from typing import TypeVar, Generic, Tuple, Optional
+
+T = TypeVar('T')
+
+
+class NonNull(Generic[T]):
+    pass
+
+
+def to_string(decorated_class):
+    def __str__(self):
+        attributes = [attr for attr in dir(self) if
+                      not attr.startswith("_") and
+                      not (
+                          hasattr(self.__dict__[attr], "__call__")
+                          if attr in self.__dict__
+                          else hasattr(decorated_class.__dict__[attr],
+                                       "__call__"))
+                      ]
+        output_format = [
+            f"{attr}={self.__dict__[attr]}"
+            if attr in self.__dict__
+            else f"{attr}={decorated_class.__dict__[attr]}"
+            for attr in attributes]
+        return f"{decorated_class.__name__}@[{', '.join(output_format)}]"
+
+    decorated_class.__str__ = __str__
+    return decorated_class
+
+
+def constructor(decorated_class):
+    required_fields = [F for F, T in
+                       decorated_class.__dict__["__annotations__"].items() if
+                       "__origin__" in T.__dict__ and T.__dict__[
+                           "__origin__"] == NonNull]
+    original_init = decorated_class.__init__
+    attributes = [name for name in decorated_class.__dict__ if
+                  not name.startswith('_')]
+    if '__annotations__' in decorated_class.__dict__:
+        for attr_name in decorated_class.__dict__['__annotations__']:
+            if attr_name not in attributes:
+                attributes.append(attr_name)
+
+    def __init__(self, *args, **kwargs):
+        for attr_name, value in zip(attributes, args):
+            if attr_name in required_fields and value is None:
+                raise ValueError(f"Field {attr_name} is marked as non-null")
+            setattr(self, attr_name, value)
+        for tentative_name, value in kwargs.items():
+            if tentative_name in required_fields and value is None:
+                raise ValueError(
+                    f"Field {tentative_name} is marked as non-null")
+            if tentative_name in attributes:
+                setattr(self, tentative_name, value)
+
+    __init__.__doc__ = original_init.__doc__
+    decorated_class.__init__ = __init__
+    return decorated_class
+
+
+def equals_and_hashcode(decorated_class):
+    def __eq__(self, other):
+        same_class = getattr(self, "__class__") == getattr(other, "__class__")
+        same_attrs = getattr(self, "__dict__") == getattr(other, "__dict__")
+        return same_class and same_attrs
+
+    def __hash__(self):
+        attributes = tuple(sorted(tuple(getattr(self, "__dict__").keys())))
+        return hash(attributes)
+
+    decorated_class.__hash__ = __hash__
+    decorated_class.__eq__ = __eq__
+    return decorated_class
+
+
+def data(decorated_class):
+    decorated_class = to_string(decorated_class)
+    decorated_class = constructor(decorated_class)
+    decorated_class = equals_and_hashcode(decorated_class)
+    return decorated_class
+
+
+def singleton(cls):
+    @functools.wraps(cls)
+    def wrapper_singleton(*args, **kwargs):
+        if not wrapper_singleton.instance:
+            try:
+                wrapper_singleton.instance = cls(*args, **kwargs)
+            except TypeError:
+                # TODO test this case, do we really want to make it a dataclass?
+                wrapper_singleton.instance = data(cls)(*args, **kwargs)
+        return wrapper_singleton.instance
+
+    wrapper_singleton.instance = None
+    return wrapper_singleton
+
+
+_DEFAULT_POOL = ThreadPoolExecutor()
+
+
+def threaded(f, executor=None):
+    @functools.wraps(f)
+    def wrapper_threaded(*args, **kwargs):
+        return (executor or _DEFAULT_POOL).submit(f, *args, **kwargs)
+
+    return wrapper_threaded
+
+
+def repeat(n):
+    def decorator_repeat(func):
+        @functools.wraps(func)
+        def wrapper_repeat(*args, **kwargs):
+            for _ in range(n):
+                value = func(*args, **kwargs)
+            return value
+
+        return wrapper_repeat
+
+    return decorator_repeat
+
+
+def sleep(duration):
+    def decorator_sleep(func):
+        @functools.wraps(func)
+        def wrapper_sleep(*args, **kwargs):
+            time.sleep(duration)
+            return func(*args, **kwargs)
+
+        return wrapper_sleep
+
+    return decorator_sleep
