@@ -176,6 +176,12 @@ p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
 ```
 
+☠️ Important note on combining @data and @singleton ☠️
+
+When combining `@singleton` with `@data`, `@singleton` should come
+before `@data`. Combining them the other way around will work in most cases
+but is not thoroughly tested and relies on assumptions that _might_ not hold.
+
 ---
 
 ### @threaded
@@ -193,9 +199,10 @@ def waste_time(sleep_time):
     print(f"{thread_name} woke up after {sleep_time}s!")
     return 42
 
+
 t1 = waste_time(5)
 t2 = waste_time(2)
-print(t1)           # <Future at 0x104130a90 state=running>
+print(t1)  # <Future at 0x104130a90 state=running>
 print(t1.result())  # 42
 ```
 
@@ -216,6 +223,7 @@ times as specified.
 def hello_world():
     print("Hello world!")
 
+
 hello_world()
 ```
 
@@ -226,7 +234,6 @@ Hello world!
 Hello world!
 Hello world!
 ```
-
 
 ## Authors
 
