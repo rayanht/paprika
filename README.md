@@ -237,6 +237,44 @@ Hello world!
 
 ___
 
+### @timeit
+
+The `@timeit` decorator times the total execution time of the decorated
+function. It uses a `timer::perf_timer` by default but that can be replaced by any
+object of type `Callable[None, int]`.
+
+```python3
+def time_waster1():
+    time.sleep(2)
+
+def time_waster2():
+    time.sleep(5)
+
+@timeit
+def test_timeit():
+    time_waster1()
+    time_waster2()
+```
+
+```python
+test_timeit executed in 7.002189894999999 seconds
+```
+
+Here's how you can replace the default timer:
+
+```python
+@timeit(timer: lambda: 0) # Or something actually useful like time.time()
+def test_timeit():
+    time_waster1()
+    time_waster2()
+```
+
+```python
+test_timeit executed in 0 seconds
+```
+
+---
+
 ### @access_counter
 
 The `@access_counter` displays a summary of how many times each of the
@@ -289,7 +327,7 @@ def time_waster2():
     time.sleep(5)
 
 
-@hotspots(top_n=5, n_runs=2)  # You can also just do @hotspots
+@hotspots(top_n=5, n_runs=2)  # You can also do just @hotspots
 def test_hotspots():
     time_waster1()
     time_waster2()
