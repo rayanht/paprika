@@ -136,7 +136,6 @@ class Person:
     name: NonNull[str]
     age: int
 
-
 p = Person(name=None, age=42)  # ValueError ❌
 ```
 
@@ -155,7 +154,6 @@ class Person:
         self.name = name
         self.age = age
 
-
 p1 = Person(name="Rayan", age=19)
 p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
@@ -169,7 +167,6 @@ print(p1 == p2 and p1 is p2)  # True ✅
 class Person:
     name: str
     age: int
-
 
 p1 = Person(name="Rayan", age=19)
 p2 = Person()
@@ -199,10 +196,9 @@ def waste_time(sleep_time):
     print(f"{thread_name} woke up after {sleep_time}s!")
     return 42
 
-
 t1 = waste_time(5)
 t2 = waste_time(2)
-print(t1)  # <Future at 0x104130a90 state=running>
+print(t1)           # <Future at 0x104130a90 state=running>
 print(t1.result())  # 42
 ```
 
@@ -222,8 +218,7 @@ times as specified.
 @repeat(n=5)
 def hello_world():
     print("Hello world!")
-
-
+    
 hello_world()
 ```
 
