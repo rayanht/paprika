@@ -145,7 +145,7 @@ p = Person(name=None, age=42)  # ValueError ❌
 
 The `@singleton` decorator can be used to enforce that a class only gets
 instantiated once within the lifetime of a program. Any subsequent instantiation
-will return the same original instance.
+will return the original instance.
 
 ```python3
 @singleton
