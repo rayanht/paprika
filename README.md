@@ -230,6 +230,9 @@ Hello world!
 Hello world!
 ```
 
+## Contributing
+Encountered a bug? Have an idea for a new feature? This project is open to all sorts of contribution! Feel free to head to the `Issues` tab and describe your request!
+
 ## Authors
 
 * **Rayan Hatout** - [GitHub](https://github.com/rayanht)
