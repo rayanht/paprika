@@ -1,9 +1,13 @@
+import inspect
+import time
 import functools
 import time
 from concurrent.futures import ThreadPoolExecutor
-from multiprocessing import Process
-from threading import Thread
-from typing import TypeVar, Generic, Tuple, Optional
+from typing import TypeVar, Generic
+import cProfile, pstats, io
+from pstats import SortKey
+
+from tabulate import tabulate
 
 T = TypeVar('T')
 
@@ -124,7 +128,20 @@ def repeat(n):
     return decorator_repeat
 
 
-def sleep(duration):
+def sleep_after(duration):
+    def decorator_sleep(func):
+        @functools.wraps(func)
+        def wrapper_sleep(*args, **kwargs):
+            ret = func(*args, **kwargs)
+            time.sleep(duration)
+            return ret
+
+        return wrapper_sleep
+
+    return decorator_sleep
+
+
+def sleep_before(duration):
     def decorator_sleep(func):
         @functools.wraps(func)
         def wrapper_sleep(*args, **kwargs):
@@ -134,3 +151,107 @@ def sleep(duration):
         return wrapper_sleep
 
     return decorator_sleep
+
+
+def timeit(_func=None, *, timer=time.perf_counter):
+    def decorator_timeit(func):
+        @functools.wraps(func)
+        def wrapper_timeit(*args, **kwargs):
+            start = timer()
+            ret = func(*args, **kwargs)
+            end = timer()
+            print(f"{func.__name__} executed in {end - start} seconds")
+            return ret
+
+        return wrapper_timeit
+
+    if _func is None:
+        return decorator_timeit
+    else:
+        return decorator_timeit(_func)
+
+
+@singleton
+@data
+class PerformanceCounter:
+    perf_dict: dict
+
+
+PerformanceCounter({})
+
+
+def access_counter(decorated_fn):
+    class AccessCounter:
+
+        def __init__(self, delegate, name):
+            PerformanceCounter().perf_dict[self] = {"delegate": delegate,
+                                                    "name": name, "nReads": 0,
+                                                    "nWrites": 0}
+
+        def __getitem__(self, item):
+            PerformanceCounter().perf_dict[self]["nReads"] += 1
+            return PerformanceCounter().perf_dict[self]["delegate"][item]
+
+        def __setitem__(self, key, value):
+            PerformanceCounter().perf_dict[self]["nWrites"] += 1
+            PerformanceCounter().perf_dict[self]["delegate"][key] = value
+
+        def __getattr__(self, item):
+            PerformanceCounter().perf_dict[self]["nReads"] += 1
+            return PerformanceCounter().perf_dict[self][
+                "delegate"].__getattribute__(
+                item)
+
+        def __setattr__(self, key, value):
+            PerformanceCounter().perf_dict[self]["nWrites"] += 1
+            return PerformanceCounter().perf_dict[self]["delegate"].__setattr__(
+                key, value)
+
+    @functools.wraps(decorated_fn)
+    def wrapper_access_counter(*args, **kwargs):
+        new_args = []
+        for arg, arg_name in zip(args,
+                                 inspect.getfullargspec(decorated_fn).args):
+            new_args.append(AccessCounter(delegate=arg, name=arg_name))
+        ret = decorated_fn(*new_args, **kwargs)
+        if new_args:
+            print(f"data access summary for function: {decorated_fn.__name__}")
+            perf_data = [[PerformanceCounter().perf_dict[arg]["name"],
+                          PerformanceCounter().perf_dict[arg]["nReads"],
+                          PerformanceCounter().perf_dict[arg]["nWrites"]] for
+                         arg in
+                         new_args]
+            print(tabulate(perf_data, headers=["Arg Name", "nReads", "nWrites"],
+                           tablefmt="grid"))
+
+        return ret
+
+    return wrapper_access_counter
+
+
+def hotspots(_func=None, *, n_runs=1, top_n=10):
+    def decorator_hotspots(func):
+        @functools.wraps(func)
+        def wrapper_hotspots(*args, **kwargs):
+            pr = cProfile.Profile()
+            pr.enable()
+            ret = None
+            for n in range(n_runs):
+                ret = func(*args, **kwargs)
+            pr.disable()
+            pstats.Stats(pr).strip_dirs().sort_stats(
+                SortKey.CUMULATIVE).print_stats(top_n)
+            return ret
+
+        return wrapper_hotspots
+
+    if _func is None:
+        return decorator_hotspots
+    else:
+        return decorator_hotspots(_func)
+
+
+def profile(decorated_fn=None, *, n_runs=1, top_n=10):
+    decorated_class = access_counter(decorated_fn)
+    decorated_class = hotspots(decorated_class)
+    return decorated_class

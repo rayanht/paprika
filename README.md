@@ -136,6 +136,7 @@ class Person:
     name: NonNull[str]
     age: int
 
+
 p = Person(name=None, age=42)  # ValueError ❌
 ```
 
@@ -154,6 +155,7 @@ class Person:
         self.name = name
         self.age = age
 
+
 p1 = Person(name="Rayan", age=19)
 p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
@@ -168,6 +170,7 @@ class Person:
     name: str
     age: int
 
+
 p1 = Person(name="Rayan", age=19)
 p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
@@ -176,8 +179,8 @@ print(p1 == p2 and p1 is p2)  # True ✅
 #### ☠️ Important note on combining @data and @singleton ☠️
 
 When combining `@singleton` with `@data`, `@singleton` should come
-before `@data`. Combining them the other way around will work in most cases
-but is not thoroughly tested and relies on assumptions that _might_ not hold.
+before `@data`. Combining them the other way around will work in most cases but
+is not thoroughly tested and relies on assumptions that _might_ not hold.
 
 ---
 
@@ -196,9 +199,10 @@ def waste_time(sleep_time):
     print(f"{thread_name} woke up after {sleep_time}s!")
     return 42
 
+
 t1 = waste_time(5)
 t2 = waste_time(2)
-print(t1)           # <Future at 0x104130a90 state=running>
+print(t1)  # <Future at 0x104130a90 state=running>
 print(t1.result())  # 42
 ```
 
@@ -218,7 +222,8 @@ times as specified.
 @repeat(n=5)
 def hello_world():
     print("Hello world!")
-    
+
+
 hello_world()
 ```
 
@@ -229,6 +234,90 @@ Hello world!
 Hello world!
 Hello world!
 ```
+
+___
+
+### @access_counter
+
+The `@access_counter` displays a summary of how many times each of the
+structures that are passed to the decorated function are accessed
+(number of reads and number of writes).
+
+```python3
+@access_counter
+def test_access_counter(list, dict, person, tuple):
+    for i in range(500):
+        list[0] = dict["key"]
+        dict["key"] = person.age
+        person.age = tuple[0]
+
+
+test_access_counter([1, 2, 3, 4, 5], {"key": 0}, Person(name="Rayan", age=19),
+                    (0, 0))
+```
+
+```
+data access summary for function: test
++------------+----------+-----------+
+| Arg Name   |   nReads |   nWrites |
++============+==========+===========+
+| list       |        0 |       500 |
++------------+----------+-----------+
+| dict       |      500 |       500 |
++------------+----------+-----------+
+| person     |      500 |       500 |
++------------+----------+-----------+
+| tuple      |      500 |         0 |
++------------+----------+-----------+
+```
+
+___
+
+### @hotspots
+
+The `@hotspots` automatically runs `cProfiler` on the decorated function and
+display the `top_n` (default = 10) most expensive function calls sorted by
+cumulative time taken (this metric will be customisable in the future). The
+sample error can be reduced by using a higher `n_runs` (default = 1) parameter.
+
+```python3
+def time_waster1():
+    time.sleep(2)
+
+
+def time_waster2():
+    time.sleep(5)
+
+
+@hotspots(top_n=5, n_runs=2)  # You can also just do @hotspots
+def test_hotspots():
+    time_waster1()
+    time_waster2()
+
+
+test_hotspots()
+```
+
+```
+   11 function calls in 14.007 seconds
+
+   Ordered by: cumulative time
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        2    0.000    0.000   14.007    7.004 main.py:27(test_hot)
+        4   14.007    3.502   14.007    3.502 {built-in method time.sleep}
+        2    0.000    0.000   10.004    5.002 main.py:23(time_waster2)
+        2    0.000    0.000    4.003    2.002 main.py:19(time_waster1)
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+```
+
+---
+
+### @profile
+
+The `@profile` decorator is simply syntatic sugar that allows to perform both
+hotspot analysis and data access analysis. Under the hood, it simply
+uses `@access_counter` followed by `@hotspots`.
 
 ## Authors
 
