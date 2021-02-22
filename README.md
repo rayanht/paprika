@@ -1,4 +1,8 @@
-Paprika is a python library that reduces boilerplate. Heavily inspired by
+![A plate filled with paprika spice](static/paprika.jpg)
+
+# Paprika
+
+Paprika is a python library that reduces boilerplate. It is heavily inspired by
 Project Lombok.
 
 ## Table of Contents
