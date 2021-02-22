@@ -1,5 +1,5 @@
 import inspect
-import time
+import traceback
 import functools
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -255,3 +255,50 @@ def profile(decorated_fn=None, *, n_runs=1, top_n=10):
     decorated_class = access_counter(decorated_fn)
     decorated_class = hotspots(decorated_class)
     return decorated_class
+
+
+def silent_catch(_func=None, *, exception=None):
+    if not exception:
+        exception = Exception
+    if type(exception) == list:
+        exception = tuple(exception)
+
+    def decorator_silent_catch(func):
+        @functools.wraps(func)
+        def wrapper_silent_catch(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exception:
+                pass
+
+        return wrapper_silent_catch
+
+    if _func is None:
+        return decorator_silent_catch
+    else:
+        return decorator_silent_catch(_func)
+
+
+def catch(_func=None, *, exception=None, handler=None):
+    if not exception:
+        exception = Exception
+    if type(exception) == list:
+        exception = tuple(exception)
+
+    def decorator_catch(func):
+        @functools.wraps(func)
+        def wrapper_catch(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exception as e:
+                if not handler:
+                    traceback.print_exc()
+                else:
+                    handler(e)
+
+        return wrapper_catch
+
+    if _func is None:
+        return decorator_catch
+    else:
+        return decorator_catch(_func)

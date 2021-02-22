@@ -23,6 +23,9 @@ Project Lombok.
 	- [`@access_counter`](#access_counter)
 	- [`@hotspots`](#hotspots)
 	- [`@profile`](#profile)
+- [Error-handling decorators](#error-handling-decorators)
+  - [`@catch`](#catch)
+  - [`@silent_catch`](#silent-catch)
 - [Contributing](#contributing)
 - [Authors](#authors)
 - [License](#license)
@@ -163,7 +166,6 @@ class Person:
     name: NonNull[str]
     age: int
 
-
 p = Person(name=None, age=42)  # ValueError ❌
 ```
 
@@ -182,7 +184,6 @@ class Person:
         self.name = name
         self.age = age
 
-
 p1 = Person(name="Rayan", age=19)
 p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
@@ -197,7 +198,6 @@ class Person:
     name: str
     age: int
 
-
 p1 = Person(name="Rayan", age=19)
 p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
@@ -210,6 +210,7 @@ before `@data`. Combining them the other way around will work in most cases but
 is not thoroughly tested and relies on assumptions that _might_ not hold.
 
 ## General utility decorators
+
 ### @threaded
 
 The `@threaded` decorator will run the decorated function in a thread by
@@ -225,10 +226,10 @@ def waste_time(sleep_time):
     print(f"{thread_name} woke up after {sleep_time}s!")
     return 42
 
-
 t1 = waste_time(5)
 t2 = waste_time(2)
-print(t1)  # <Future at 0x104130a90 state=running>
+
+print(t1)           # <Future at 0x104130a90 state=running>
 print(t1.result())  # 42
 ```
 
@@ -249,7 +250,6 @@ times as specified.
 def hello_world():
     print("Hello world!")
 
-
 hello_world()
 ```
 
@@ -266,8 +266,8 @@ Hello world!
 ### timeit
 
 The `@timeit` decorator times the total execution time of the decorated
-function. It uses a `timer::perf_timer` by default but that can be replaced by any
-object of type `Callable[None, int]`.
+function. It uses a `timer::perf_timer` by default but that can be replaced by
+any object of type `Callable[None, int]`.
 
 ```python3
 def time_waster1():
@@ -348,16 +348,13 @@ sample error can be reduced by using a higher `n_runs` (default = 1) parameter.
 def time_waster1():
     time.sleep(2)
 
-
 def time_waster2():
     time.sleep(5)
-
 
 @hotspots(top_n=5, n_runs=2)  # You can also do just @hotspots
 def test_hotspots():
     time_waster1()
     time_waster2()
-
 
 test_hotspots()
 ```
@@ -383,10 +380,102 @@ The `@profile` decorator is simply syntatic sugar that allows to perform both
 hotspot analysis and data access analysis. Under the hood, it simply
 uses `@access_counter` followed by `@hotspots`.
 
+## Error-handling decorators
+
+### @catch
+
+The `@catch` decorator can be used to wrap a function inside a `try/catch`
+block. `@catch` expects to receive in the `exceptions` argument at least one
+exception that we want to catch.
+
+If no exception is provided, `@catch` will by default catch _all_ exceptions (
+excluding `SystemExit`, `KeyboardInterrupt`
+and `GeneratorExit` since they do not subclass the generic `Exception` class).
+
+`@catch` can take a custom exception handler as a parameter. If no handler is
+supplied, a stack trace is logged to `stderr` and the program will continue
+executing.
+
+```python
+@catch(exception=ValueError)
+def test_catch1():
+    raise ValueError
+
+@catch(exception=[EOFError, KeyError])
+def test_catch2():
+    raise ValueError
+
+test_catch1()
+print("Still alive!")  # This should get printed since we're catching the ValueError.
+
+test_catch2()
+print("Still alive?")  # This will not get printed since we're not catching ValueError in this case.
+```
+
+```
+Traceback (most recent call last):
+  File "/Users/rayan/Desktop/paprika/paprika/__init__.py", line 292, in wrapper_catch
+    return func(*args, **kwargs)
+  File "/Users/rayan/Desktop/paprika/main.py", line 29, in test_exception1
+    raise ValueError
+ValueError
+
+Still alive!
+
+Traceback (most recent call last):
+  File "/Users/rayan/Desktop/paprika/main.py", line 40, in <module>
+    test_exception2()
+  File "/Users/rayan/Desktop/paprika/paprika/__init__.py", line 292, in wrapper_catch
+    return func(*args, **kwargs)
+  File "/Users/rayan/Desktop/paprika/main.py", line 37, in test_exception2
+    raise ValueError
+ValueError
+```
+
+#### Using a custom exception handler
+
+If provided, a custom exception handler must be of
+type `Callable[Exception, Generic[T]]`. In other words, its signature must take
+one parameter of type Exception.
+
+```python
+@catch(exception=ValueError,
+       handler=lambda x: print(f"Ohno, a {repr(x)} was raised!"))
+def test_custom_handler():
+    raise ValueError
+
+test_custom_handler()
+```
+
+```
+Ohno, a ValueError() was raised!
+```
+
 ---
 
+### @silent_catch
+
+The `@silent_catch` decorator is very similar to the `@catch` decorator in its
+usage. It takes one or more exceptions but then simply catches them silently.
+
+```python
+@silent_catch(exception=[ValueError, TypeError])
+def test_silent_catch():
+    raise TypeError
+
+test_silent_catch()
+print("Still alive!")
+```
+
+```
+Still alive!
+```
+
 ## Contributing
-Encountered a bug? Have an idea for a new feature? This project is open to all sorts of contribution! Feel free to head to the `Issues` tab and describe your request!
+
+Encountered a bug? Have an idea for a new feature? This project is open to all
+sorts of contribution! Feel free to head to the `Issues` tab and describe your
+request!
 
 ## Authors
 
