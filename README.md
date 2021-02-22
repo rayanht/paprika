@@ -27,7 +27,7 @@ Project Lombok.
     - [`@profile`](#profile)
   - [Error-handling decorators](#error-handling-decorators)
     - [`@catch`](#catch)
-    - [`@silent_catch`](#silent-catch)
+    - [`@silent_catch`](#silent_catch)
 - [Contributing](#contributing)
 - [Authors](#authors)
 - [License](#license)
