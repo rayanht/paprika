@@ -1,6 +1,29 @@
 Paprika is a python library that reduces boilerplate. Heavily inspired by
 Project Lombok.
 
+## Table of Contents
+- [Installation](#installation)
+- [Usage](#usage)
+- [Features & Examples](#features-and-examples)
+	- [`@to_string`](#to_string)
+	- [`@equals_and_hashcode`](#equals_and_hashcode)
+	- [`@data`](#data)
+		- [On `@data` and NonNull](#on-data-and-nonnull)
+	- [`@singleton`](#singleton)
+		- [Important note on combining `@data` and `@singleton`](#important-note-on-combining-data-and-singleton)
+- [General utility decorators](#general-utility-decorators)
+	- [`@threaded`](#threaded)
+	- [`@repeat`](#repeat)
+- [Benchmark decorators](#benchmark-decorators)
+	- [`@timeit`](#timeit)
+	- [`@access_counter`](#access_counter)
+	- [`@hotspots`](#hotspots)
+	- [`@profile`](#profile)
+- [Contributing](#contributing)
+- [Authors](#authors)
+- [License](#license)
+
+
 ## Installation
 
 paprika is available on PyPi.
@@ -26,7 +49,7 @@ by importing `paprika` as follows:
 import paprika
 ```
 
-## Features & Examples
+## Features and Examples
 
 ### @to_string
 
@@ -124,7 +147,7 @@ class Person:
     age: int
 ```
 
-#### Footnote on @data and NonNull
+#### On @data and NonNull
 
 `paprika` exposes a `NonNull` generic type that can be used in conjunction with
 the `@data` decorator to enforce that certain arguments passed to the
@@ -176,14 +199,13 @@ p2 = Person()
 print(p1 == p2 and p1 is p2)  # True ✅
 ```
 
-#### ☠️ Important note on combining @data and @singleton ☠️
+#### Important note on combining @data and @singleton
 
 When combining `@singleton` with `@data`, `@singleton` should come
 before `@data`. Combining them the other way around will work in most cases but
 is not thoroughly tested and relies on assumptions that _might_ not hold.
 
----
-
+## General utility decorators
 ### @threaded
 
 The `@threaded` decorator will run the decorated function in a thread by
@@ -235,9 +257,9 @@ Hello world!
 Hello world!
 ```
 
-___
+## Benchmark decorators
 
-### @timeit
+### timeit
 
 The `@timeit` decorator times the total execution time of the decorated
 function. It uses a `timer::perf_timer` by default but that can be replaced by any
