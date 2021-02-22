@@ -1,4 +1,5 @@
 ![A plate filled with paprika spice](static/paprika.jpg)
+_Image courtesy of Anna Quaglia (Photographer)_
 
 # Paprika
 
