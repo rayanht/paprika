@@ -10,20 +10,21 @@ Project Lombok.
 - [Installation](#installation)
 - [Usage](#usage)
 - [Features & Examples](#features-and-examples)
-	- [`@to_string`](#to_string)
-	- [`@equals_and_hashcode`](#equals_and_hashcode)
-	- [`@data`](#data)
-		- [On `@data` and NonNull](#on-data-and-nonnull)
-	- [`@singleton`](#singleton)
-		- [Important note on combining `@data` and `@singleton`](#important-note-on-combining-data-and-singleton)
-- [General utility decorators](#general-utility-decorators)
-	- [`@threaded`](#threaded)
-	- [`@repeat`](#repeat)
-- [Benchmark decorators](#benchmark-decorators)
-	- [`@timeit`](#timeit)
-	- [`@access_counter`](#access_counter)
-	- [`@hotspots`](#hotspots)
-	- [`@profile`](#profile)
+	- [Object-oriented decorators](#general-utility-decorators)
+		- [`@to_string`](#to_string)
+		- [`@equals_and_hashcode`](#equals_and_hashcode)
+		- [`@data`](#data)
+			- [On `@data` and NonNull](#on-data-and-nonnull)
+		- [`@singleton`](#singleton)
+			- [Important note on combining `@data` and `@singleton`](#important-note-on-combining-data-and-singleton)
+	- [General utility decorators](#general-utility-decorators)
+		- [`@threaded`](#threaded)
+		- [`@repeat`](#repeat)
+	- [Benchmark decorators](#benchmark-decorators)
+		- [`@timeit`](#timeit)
+		- [`@access_counter`](#access_counter)
+		- [`@hotspots`](#hotspots)
+		- [`@profile`](#profile)
 - [Contributing](#contributing)
 - [Authors](#authors)
 - [License](#license)
@@ -55,6 +56,8 @@ import paprika
 ```
 
 ## Features and Examples
+
+## Object-oriented decorators
 
 ### @to_string
 
