@@ -10,6 +10,7 @@ repository = "https://github.com/rayanht/paprika"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+tabulate = "^0.8.9"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
