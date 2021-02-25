@@ -42,7 +42,7 @@ def timeit(_func=None, *, timer=time.perf_counter, handler=None):
         return decorator_timeit(_func)
 
 
-def display_access_counter_results(func, new_args, test_mode, test_handler):
+def dispatch_access_counter_results(func, new_args, test_mode, test_handler):
     print(f"data access summary for function: {func.__name__}")
     if test_mode:
         test_handler(
@@ -101,7 +101,7 @@ def access_counter(_func=None, *, test_mode=False, test_handler=None):
                 new_args.append(AccessCounter(delegate=arg, name=arg_name))
             ret = func(*new_args, **kwargs)
             if new_args:
-                display_access_counter_results(func, new_args, test_mode, test_handler)
+                dispatch_access_counter_results(func, new_args, test_mode, test_handler)
 
             return ret
 
