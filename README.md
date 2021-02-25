@@ -1,6 +1,13 @@
 ![A plate filled with paprika spice](static/paprika.jpg)
 _Image courtesy of Anna Quaglia (Photographer)_
 
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/rayanht/paprika/Test%20and%20collect%20coverage)
+[![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
+[![Maintainability](https://api.codeclimate.com/v1/badges/eae8b5fab78e30cbab21/maintainability)](https://codeclimate.com/github/rayanht/paprika/maintainability)
+[![codecov](https://codecov.io/gh/rayanht/paprika/branch/main/graph/badge.svg?token=21FA3K95AM)](https://codecov.io/gh/rayanht/paprika)
+[![PyPI version fury.io](https://badge.fury.io/py/paprika.svg)](https://pypi.python.org/pypi/paprika/)
+[![Downloads](https://static.pepy.tech/personalized-badge/paprika?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/paprika)
+
 # Paprika
 
 Paprika is a python library that reduces boilerplate. It is heavily inspired by
