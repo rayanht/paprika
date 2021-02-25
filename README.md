@@ -5,7 +5,7 @@ _Image courtesy of Anna Quaglia (Photographer)_
 [![PyPI license](https://img.shields.io/pypi/l/ansicolortags.svg)](https://pypi.python.org/pypi/ansicolortags/)
 [![Maintainability](https://api.codeclimate.com/v1/badges/eae8b5fab78e30cbab21/maintainability)](https://codeclimate.com/github/rayanht/paprika/maintainability)
 [![codecov](https://codecov.io/gh/rayanht/paprika/branch/main/graph/badge.svg?token=21FA3K95AM)](https://codecov.io/gh/rayanht/paprika)
-[![PyPI version fury.io](https://badge.fury.io/py/paprika.svg)](https://pypi.python.org/pypi/paprika/)
+![PyPI](https://img.shields.io/pypi/v/paprika)
 [![Downloads](https://static.pepy.tech/personalized-badge/paprika?period=total&units=international_system&left_color=grey&right_color=blue&left_text=Downloads)](https://pepy.tech/project/paprika)
 
 # Paprika
