@@ -1,10 +1,11 @@
 import inspect
+import pstats
 import traceback
 import functools
 import time
 from concurrent.futures import ThreadPoolExecutor
 from typing import TypeVar, Generic
-import cProfile, pstats, io
+import cProfile
 from pstats import SortKey
 
 from tabulate import tabulate
