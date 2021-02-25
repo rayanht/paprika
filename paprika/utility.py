@@ -19,7 +19,7 @@ def repeat(n):
         def wrapper_repeat(*args, **kwargs):
             for _ in range(n):
                 value = func(*args, **kwargs)
-                return value
+            return value
 
         return wrapper_repeat
 
