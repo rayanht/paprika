@@ -9,7 +9,7 @@ from pstats import SortKey
 
 from tabulate import tabulate
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class NonNull(Generic[T]):
@@ -18,19 +18,22 @@ class NonNull(Generic[T]):
 
 def to_string(decorated_class):
     def __str__(self):
-        attributes = [attr for attr in dir(self) if
-                      not attr.startswith("_") and
-                      not (
-                          hasattr(self.__dict__[attr], "__call__")
-                          if attr in self.__dict__
-                          else hasattr(decorated_class.__dict__[attr],
-                                       "__call__"))
-                      ]
+        attributes = [
+            attr
+            for attr in dir(self)
+            if not attr.startswith("_")
+               and not (
+                hasattr(self.__dict__[attr], "__call__")
+                if attr in self.__dict__
+                else hasattr(decorated_class.__dict__[attr], "__call__")
+            )
+        ]
         output_format = [
             f"{attr}={self.__dict__[attr]}"
             if attr in self.__dict__
             else f"{attr}={decorated_class.__dict__[attr]}"
-            for attr in attributes]
+            for attr in attributes
+        ]
         return f"{decorated_class.__name__}@[{', '.join(output_format)}]"
 
     decorated_class.__str__ = __str__
@@ -38,15 +41,16 @@ def to_string(decorated_class):
 
 
 def constructor(decorated_class):
-    required_fields = [F for F, T in
-                       decorated_class.__dict__["__annotations__"].items() if
-                       "__origin__" in T.__dict__ and T.__dict__[
-                           "__origin__"] == NonNull]
+    required_fields = [
+        F
+        for F, T in decorated_class.__dict__["__annotations__"].items()
+        if "__origin__" in T.__dict__ and T.__dict__["__origin__"] == NonNull
+    ]
     original_init = decorated_class.__init__
     attributes = [name for name in decorated_class.__dict__ if
-                  not name.startswith('_')]
-    if '__annotations__' in decorated_class.__dict__:
-        for attr_name in decorated_class.__dict__['__annotations__']:
+                  not name.startswith("_")]
+    if "__annotations__" in decorated_class.__dict__:
+        for attr_name in decorated_class.__dict__["__annotations__"]:
             if attr_name not in attributes:
                 attributes.append(attr_name)
 
@@ -153,14 +157,17 @@ def sleep_before(duration):
     return decorator_sleep
 
 
-def timeit(_func=None, *, timer=time.perf_counter):
+def timeit(_func=None, *, timer=time.perf_counter, handler=None):
     def decorator_timeit(func):
         @functools.wraps(func)
         def wrapper_timeit(*args, **kwargs):
             start = timer()
             ret = func(*args, **kwargs)
             end = timer()
-            print(f"{func.__name__} executed in {end - start} seconds")
+            run_time = end - start
+            if handler:
+                handler(func.__name__, run_time)
+            print(f"{func.__name__} executed in {run_time} seconds")
             return ret
 
         return wrapper_timeit
@@ -180,13 +187,15 @@ class PerformanceCounter:
 PerformanceCounter({})
 
 
-def access_counter(decorated_fn):
+def access_counter(_func=None, *, test_mode=False, test_handler=None):
     class AccessCounter:
-
         def __init__(self, delegate, name):
-            PerformanceCounter().perf_dict[self] = {"delegate": delegate,
-                                                    "name": name, "nReads": 0,
-                                                    "nWrites": 0}
+            PerformanceCounter().perf_dict[self] = {
+                "delegate": delegate,
+                "name": name,
+                "nReads": 0,
+                "nWrites": 0,
+            }
 
         def __getitem__(self, item):
             PerformanceCounter().perf_dict[self]["nReads"] += 1
@@ -198,35 +207,60 @@ def access_counter(decorated_fn):
 
         def __getattr__(self, item):
             PerformanceCounter().perf_dict[self]["nReads"] += 1
-            return PerformanceCounter().perf_dict[self][
-                "delegate"].__getattribute__(
-                item)
+            return (
+                PerformanceCounter().perf_dict[self][
+                    "delegate"].__getattribute__(item)
+            )
 
         def __setattr__(self, key, value):
             PerformanceCounter().perf_dict[self]["nWrites"] += 1
-            return PerformanceCounter().perf_dict[self]["delegate"].__setattr__(
-                key, value)
+            return (
+                PerformanceCounter().perf_dict[self]["delegate"].__setattr__(
+                    key, value)
+            )
 
-    @functools.wraps(decorated_fn)
-    def wrapper_access_counter(*args, **kwargs):
-        new_args = []
-        for arg, arg_name in zip(args,
-                                 inspect.getfullargspec(decorated_fn).args):
-            new_args.append(AccessCounter(delegate=arg, name=arg_name))
-        ret = decorated_fn(*new_args, **kwargs)
-        if new_args:
-            print(f"data access summary for function: {decorated_fn.__name__}")
-            perf_data = [[PerformanceCounter().perf_dict[arg]["name"],
-                          PerformanceCounter().perf_dict[arg]["nReads"],
-                          PerformanceCounter().perf_dict[arg]["nWrites"]] for
-                         arg in
-                         new_args]
-            print(tabulate(perf_data, headers=["Arg Name", "nReads", "nWrites"],
-                           tablefmt="grid"))
+    def decorator_access_counter(func):
+        @functools.wraps(func)
+        def wrapper_access_counter(*args, **kwargs):
+            new_args = []
+            for arg, arg_name in zip(args, inspect.getfullargspec(func).args):
+                new_args.append(AccessCounter(delegate=arg, name=arg_name))
+            ret = func(*new_args, **kwargs)
+            if new_args:
+                print(f"data access summary for function: {func.__name__}")
+                if test_mode:
+                    test_handler(
+                        {
+                            PerformanceCounter()
+                                .perf_dict[arg]["name"]: PerformanceCounter()
+                                .perf_dict[arg]
+                            for arg in new_args
+                        }
+                    )
+                perf_data = [
+                    [
+                        PerformanceCounter().perf_dict[arg]["name"],
+                        PerformanceCounter().perf_dict[arg]["nReads"],
+                        PerformanceCounter().perf_dict[arg]["nWrites"],
+                    ]
+                    for arg in new_args
+                ]
+                print(
+                    tabulate(
+                        perf_data,
+                        headers=["Arg Name", "nReads", "nWrites"],
+                        tablefmt="grid",
+                    )
+                )
 
-        return ret
+            return ret
 
-    return wrapper_access_counter
+        return wrapper_access_counter
+
+    if _func is None:
+        return decorator_access_counter
+    else:
+        return decorator_access_counter(_func)
 
 
 def hotspots(_func=None, *, n_runs=1, top_n=10):
@@ -240,7 +274,9 @@ def hotspots(_func=None, *, n_runs=1, top_n=10):
                 ret = func(*args, **kwargs)
             pr.disable()
             pstats.Stats(pr).strip_dirs().sort_stats(
-                SortKey.CUMULATIVE).print_stats(top_n)
+                SortKey.CUMULATIVE).print_stats(
+                top_n
+            )
             return ret
 
         return wrapper_hotspots
