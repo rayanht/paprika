@@ -18,7 +18,7 @@ jobs:
     - name: Install dependencies
       uses: knowsuchagency/poetry-install@v1
       env:
-        POETRY_VIRTUALENVS_CREATE: false
+        POETRY_VIRTUALENVS_CREATE: true
     - name: Generate Report
       run: |
         pip install coverage
@@ -26,5 +26,4 @@ jobs:
     - name: Upload Coverage to Codecov
       uses: codecov/codecov-action@v1
       with:
-        fail_ci_if_error: true
         verbose: true
