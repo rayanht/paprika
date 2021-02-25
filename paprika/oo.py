@@ -14,7 +14,7 @@ def to_string(decorated_class):
             attr
             for attr in dir(self)
             if not attr.startswith("_")
-               and not (
+            and not (
                 hasattr(self.__dict__[attr], "__call__")
                 if attr in self.__dict__
                 else hasattr(decorated_class.__dict__[attr], "__call__")
@@ -32,20 +32,24 @@ def to_string(decorated_class):
     return decorated_class
 
 
-def constructor(decorated_class):
-    required_fields = [
-        F
-        for F, T in decorated_class.__dict__["__annotations__"].items()
-        if "__origin__" in T.__dict__ and T.__dict__["__origin__"] == NonNull
-    ]
-    original_init = decorated_class.__init__
-    attributes = [name for name in decorated_class.__dict__ if
-                  not name.startswith("_")]
+def collect_attributes(decorated_class):
+    attributes = [name for name in decorated_class.__dict__ if not name.startswith("_")]
     if "__annotations__" in decorated_class.__dict__:
         for attr_name in decorated_class.__dict__["__annotations__"]:
             if attr_name not in attributes:
                 attributes.append(attr_name)
+    return attributes
 
+
+def find_required_fields(decorated_class):
+    return [
+        F
+        for F, T in decorated_class.__dict__["__annotations__"].items()
+        if "__origin__" in T.__dict__ and T.__dict__["__origin__"] == NonNull
+    ]
+
+
+def generate_generic_init(attributes, required_fields):
     def __init__(self, *args, **kwargs):
         for attr_name, value in zip(attributes, args):
             if attr_name in required_fields and value is None:
@@ -53,13 +57,18 @@ def constructor(decorated_class):
             setattr(self, attr_name, value)
         for tentative_name, value in kwargs.items():
             if tentative_name in required_fields and value is None:
-                raise ValueError(
-                    f"Field {tentative_name} is marked as non-null")
+                raise ValueError(f"Field {tentative_name} is marked as non-null")
             if tentative_name in attributes:
                 setattr(self, tentative_name, value)
 
-    __init__.__doc__ = original_init.__doc__
-    decorated_class.__init__ = __init__
+    return __init__
+
+
+def constructor(decorated_class):
+    required_fields = find_required_fields(decorated_class)
+    attributes = collect_attributes(decorated_class)
+
+    decorated_class.__init__ = generate_generic_init(attributes, required_fields)
     return decorated_class
 
 

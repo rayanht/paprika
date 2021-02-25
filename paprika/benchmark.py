@@ -42,38 +42,57 @@ def timeit(_func=None, *, timer=time.perf_counter, handler=None):
         return decorator_timeit(_func)
 
 
-def access_counter(_func=None, *, test_mode=False, test_handler=None):
-    class AccessCounter:
-        def __init__(self, delegate, name):
-            PerformanceCounter().perf_dict[self] = {
-                "delegate": delegate,
-                "name": name,
-                "nReads": 0,
-                "nWrites": 0,
+def display_access_counter_results(func, new_args, test_mode, test_handler):
+    print(f"data access summary for function: {func.__name__}")
+    if test_mode:
+        test_handler(
+            {
+                PerformanceCounter()
+                .perf_dict[arg]["name"]: PerformanceCounter()
+                .perf_dict[arg]
+                for arg in new_args
             }
+        )
+    perf_data = [
+        [
+            PerformanceCounter().perf_dict[arg]["name"],
+            PerformanceCounter().perf_dict[arg]["nReads"],
+            PerformanceCounter().perf_dict[arg]["nWrites"],
+        ]
+        for arg in new_args
+    ]
+    print(
+        tabulate(perf_data, headers=["Arg Name", "nReads", "nWrites"], tablefmt="grid",)
+    )
 
-        def __getitem__(self, item):
-            PerformanceCounter().perf_dict[self]["nReads"] += 1
-            return PerformanceCounter().perf_dict[self]["delegate"][item]
 
-        def __setitem__(self, key, value):
-            PerformanceCounter().perf_dict[self]["nWrites"] += 1
-            PerformanceCounter().perf_dict[self]["delegate"][key] = value
+class AccessCounter:
+    def __init__(self, delegate, name):
+        PerformanceCounter().perf_dict[self] = {
+            "delegate": delegate,
+            "name": name,
+            "nReads": 0,
+            "nWrites": 0,
+        }
 
-        def __getattr__(self, item):
-            PerformanceCounter().perf_dict[self]["nReads"] += 1
-            return (
-                PerformanceCounter().perf_dict[self][
-                    "delegate"].__getattribute__(item)
-            )
+    def __getitem__(self, item):
+        PerformanceCounter().perf_dict[self]["nReads"] += 1
+        return PerformanceCounter().perf_dict[self]["delegate"][item]
 
-        def __setattr__(self, key, value):
-            PerformanceCounter().perf_dict[self]["nWrites"] += 1
-            return (
-                PerformanceCounter().perf_dict[self]["delegate"].__setattr__(
-                    key, value)
-            )
+    def __setitem__(self, key, value):
+        PerformanceCounter().perf_dict[self]["nWrites"] += 1
+        PerformanceCounter().perf_dict[self]["delegate"][key] = value
 
+    def __getattr__(self, item):
+        PerformanceCounter().perf_dict[self]["nReads"] += 1
+        return PerformanceCounter().perf_dict[self]["delegate"].__getattribute__(item)
+
+    def __setattr__(self, key, value):
+        PerformanceCounter().perf_dict[self]["nWrites"] += 1
+        return PerformanceCounter().perf_dict[self]["delegate"].__setattr__(key, value)
+
+
+def access_counter(_func=None, *, test_mode=False, test_handler=None):
     def decorator_access_counter(func):
         @functools.wraps(func)
         def wrapper_access_counter(*args, **kwargs):
@@ -82,31 +101,7 @@ def access_counter(_func=None, *, test_mode=False, test_handler=None):
                 new_args.append(AccessCounter(delegate=arg, name=arg_name))
             ret = func(*new_args, **kwargs)
             if new_args:
-                print(f"data access summary for function: {func.__name__}")
-                if test_mode:
-                    test_handler(
-                        {
-                            PerformanceCounter()
-                                .perf_dict[arg]["name"]: PerformanceCounter()
-                                .perf_dict[arg]
-                            for arg in new_args
-                        }
-                    )
-                perf_data = [
-                    [
-                        PerformanceCounter().perf_dict[arg]["name"],
-                        PerformanceCounter().perf_dict[arg]["nReads"],
-                        PerformanceCounter().perf_dict[arg]["nWrites"],
-                    ]
-                    for arg in new_args
-                ]
-                print(
-                    tabulate(
-                        perf_data,
-                        headers=["Arg Name", "nReads", "nWrites"],
-                        tablefmt="grid",
-                    )
-                )
+                display_access_counter_results(func, new_args, test_mode, test_handler)
 
             return ret
 
@@ -128,8 +123,7 @@ def hotspots(_func=None, *, n_runs=1, top_n=10):
             for n in range(n_runs):
                 ret = func(*args, **kwargs)
             pr.disable()
-            pstats.Stats(pr).strip_dirs().sort_stats(
-                SortKey.CUMULATIVE).print_stats(
+            pstats.Stats(pr).strip_dirs().sort_stats(SortKey.CUMULATIVE).print_stats(
                 top_n
             )
             return ret
