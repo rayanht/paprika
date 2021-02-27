@@ -1,11 +1,13 @@
 import time
 import unittest
 
-from paprika import access_counter, data, timeit, sleep_after, sleep_before, \
-    repeat
+from paprika import sleep_after, sleep_before, repeat
 
 
 class UtilityTestCases(unittest.TestCase):
+    # We cannot be too sure that sleeping exceeds the time, so give it 10ms leeway
+    SLEEP_TOLERANCE = 0.01
+
     def test_sleep_after(self):
         start = time.perf_counter()
 
@@ -14,7 +16,7 @@ class UtilityTestCases(unittest.TestCase):
             self.assertLess(time.perf_counter() - start, 0.5)
 
         f()
-        self.assertGreaterEqual(time.perf_counter() - start, 2)
+        self.assertGreaterEqual(time.perf_counter() - start, 2.0 - self.SLEEP_TOLERANCE)
 
     def test_sleep_before(self):
         start = time.perf_counter()
