@@ -8,9 +8,6 @@ jobs:
       PYTHON: '3.9'
     steps:
     - uses: actions/checkout@v2
-      with:
-        fetch-depth: ‘2’
-
     - name: Setup Python
       uses: actions/setup-python@master
       with:
