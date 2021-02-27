@@ -9,11 +9,16 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: "3.9"
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: 1.1.4
+      - name: Install dependencies
+        run: poetry install
       - name: Generate Report
         run: |
-          pip install tabulate
-          pip install coverage
-          coverage run -m unittest
+          poetry run pip install coverage
+          poetry run coverage run -m unittest
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
