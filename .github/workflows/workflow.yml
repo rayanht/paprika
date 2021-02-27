@@ -2,9 +2,10 @@ name: Test and collect coverage
 on: [push, pull_request]
 jobs:
   run:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
+        os: [ macos-latest, windows-latest, ubuntu-20.04 ]
         python-version: [ '3.8', '3.9' ]
     steps:
     - uses: actions/checkout@v2
