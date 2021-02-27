@@ -1,8 +1,9 @@
 import unittest
-
-from paprika import data, NonNull, singleton
-
-
+import os
+import tempfile
+from typing import Any
+from hypothesis import given, settings, strategies as st
+from paprika import data, NonNull, singleton, serial
 class OOTestCases(unittest.TestCase):
     @data
     class TestClass:
@@ -38,3 +39,37 @@ class OOTestCases(unittest.TestCase):
         s1 = self.TestSingleton(field1="test")
         s2 = self.TestSingleton()
         self.assertEqual(s1, s2)
+
+    @data
+    @serial
+    class TestSerialClass:
+        field1: Any
+
+    @given(st.binary())
+    @settings(max_examples=10)
+    def test_serial(self, b):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_file_path = os.path.join(tmp_dir, 'data.pickle')
+
+            c = self.TestSerialClass(b)
+            c.__dump__(tmp_file_path)
+            deserialized = self.TestSerialClass.__load__(tmp_file_path)
+
+            self.assertEqual(deserialized, c)
+            
+    @data
+    @serial(protocol=3)
+    class TestSerialClassProtocol3:
+        field1: Any
+        
+    @given(st.binary())
+    @settings(max_examples=10)
+    def test_serial_protocol_4(self, b):
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_file_path = os.path.join(tmp_dir, 'data.pickle')
+
+            c = self.TestSerialClassProtocol3(b)
+            c.__dump__(tmp_file_path)
+            deserialized = self.TestSerialClassProtocol3.__load__(tmp_file_path)
+
+            self.assertEqual(deserialized, c)

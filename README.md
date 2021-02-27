@@ -27,6 +27,7 @@ Project Lombok.
   - [General utility decorators](#general-utility-decorators)
     - [`@threaded`](#threaded)
     - [`@repeat`](#repeat)
+    - [`@serial`](#serial)
   - [Benchmark decorators](#benchmark-decorators)
     - [`@timeit`](#timeit)
     - [`@access_counter`](#access_counter)
@@ -271,6 +272,40 @@ Hello world!
 Hello world!
 Hello world!
 ```
+
+### @serial
+The `@serial` decorator adds `__dump__` and `__load__` to a class for pickling convenience.
+
+`__dump__` and `__load__` take in the target and source pickle file paths respectively.
+
+This decorator takes in an optional `protocol` argument (e.g. `@serial(protocol=5)`) specifiying the [pickling protocol](https://docs.python.org/3/library/pickle.html#data-stream-format). 
+
+#### Python
+
+```python3
+class Person:
+    def __init__(self, name: str):
+        self.name = name
+
+    def __dump__(self, file_path):
+        with open(file_path, "wb") as f:
+            pickle_dump(self, f, protocol=5)
+        
+    @staticmethod
+    def __load__(file_path):
+        with open(file_path, "rb") as f:
+            return pickle.load(f)
+```
+
+#### Python with paprika
+
+```python3
+@data
+@serial(protocol=5)
+class Person:
+    name: str
+```
+
 
 ## Benchmark decorators
 

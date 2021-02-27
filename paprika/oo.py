@@ -1,5 +1,6 @@
 import functools
-from typing import TypeVar, Generic
+import pickle
+from typing import Type, TypeVar, Generic
 
 T = TypeVar("T")
 
@@ -111,3 +112,26 @@ def singleton(cls):
 
     wrapper_singleton.instance = None
     return wrapper_singleton
+
+
+def serial(decorated_class=None, protocol=None):
+    def decorator(decorated_class):
+        def __dump__(self, file_path): 
+            with open(file_path, "wb") as f:
+                pickle.dump(self, f, protocol=protocol)
+
+        @staticmethod
+        def __load__(file_path):
+            with open(file_path, "rb") as f:
+                return pickle.load(f)
+
+        decorated_class.__dump__ = __dump__
+        decorated_class.__load__ = __load__
+        
+        return decorated_class
+        
+    if decorated_class is not None:
+        return decorator(decorated_class)
+
+    return decorator
+
