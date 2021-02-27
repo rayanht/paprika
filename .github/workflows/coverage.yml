@@ -1,18 +1,14 @@
-name: Test and collect coverage
+name: Collect and upload coverage
 on: [push, pull_request]
 jobs:
-  run:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest, windows-latest, ubuntu-20.04]
-        python-version: ["3.8", "3.9"]
+  unittest:
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
       - name: Setup Python
         uses: actions/setup-python@master
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: "3.9"
       - name: Generate Report
         run: |
           pip install tabulate
