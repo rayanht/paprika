@@ -534,6 +534,7 @@ This project requires [poetry](https://github.com/python-poetry/poetry).
 2. Enter your virtual environment.
 3. Install poetry: `pip install poetry`.
 4. Install dependencies: `poetry install`.
+5. Initialize pre-commit: `pre-commit install`.
 
 ## Authors
 
