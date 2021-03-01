@@ -45,7 +45,7 @@ class OOTestCases(unittest.TestCase):
     class TestPickledClass:
         field1: Any
 
-    @given(st.binary())
+    @given(st.binary(min_size=100))
     @settings(max_examples=10)
     def test_pickled(self, b):
         with tempfile.TemporaryDirectory() as tmp_dir:
@@ -62,7 +62,7 @@ class OOTestCases(unittest.TestCase):
     class TestPickledClassProtocol3:
         field1: Any
         
-    @given(st.binary())
+    @given(st.binary(min_size=100))
     @settings(max_examples=10)
     def test_pickled_protocol_4(self, b):
         with tempfile.TemporaryDirectory() as tmp_dir:
