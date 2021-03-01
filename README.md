@@ -519,9 +519,21 @@ Still alive!
 
 ## Contributing
 
+### Issues
+
 Encountered a bug? Have an idea for a new feature? This project is open to all
 sorts of contribution! Feel free to head to the `Issues` tab and describe your
 request!
+
+### Development Setup
+
+This project requires [poetry](https://github.com/python-poetry/poetry).
+
+#### Recommended Steps
+1. Initialize a virtual environment: `python -m venv .env`
+2. Enter your virtual environment.
+3. Install poetry: `pip install poetry`.
+4. Install dependencies: `poetry install`.
 
 ## Authors
 
