@@ -47,7 +47,9 @@ def find_required_fields(decorated_class):
     return [
         F
         for F, T in decorated_class.__dict__["__annotations__"].items()
-        if "__origin__" in T.__dict__ and T.__dict__["__origin__"] == NonNull
+        if hasattr(T, "__dict__") \
+            and "__origin__" in T.__dict__ \
+            and T.__dict__["__origin__"] == NonNull
     ]
 
 
