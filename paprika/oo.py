@@ -115,7 +115,7 @@ def singleton(cls):
     return wrapper_singleton
 
 
-def serial(decorated_class=None, protocol=None):
+def pickled(decorated_class=None, protocol=None):
     def decorator(decorated_class):
         def __dump__(self, file_path): 
             with open(file_path, "wb") as f:
