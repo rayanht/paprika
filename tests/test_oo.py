@@ -3,7 +3,7 @@ import os
 import tempfile
 from typing import Any
 from hypothesis import given, settings, strategies as st
-from paprika import data, NonNull, singleton, serial
+from paprika import data, NonNull, singleton, pickled
 class OOTestCases(unittest.TestCase):
     @data
     class TestClass:
@@ -41,35 +41,35 @@ class OOTestCases(unittest.TestCase):
         self.assertEqual(s1, s2)
 
     @data
-    @serial
-    class TestSerialClass:
+    @pickled
+    class TestPickledClass:
         field1: Any
 
     @given(st.binary())
     @settings(max_examples=10)
-    def test_serial(self, b):
+    def test_pickled(self, b):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_file_path = os.path.join(tmp_dir, 'data.pickle')
 
-            c = self.TestSerialClass(b)
+            c = self.TestPickledClass(b)
             c.__dump__(tmp_file_path)
-            deserialized = self.TestSerialClass.__load__(tmp_file_path)
+            unpickled = self.TestPickledClass.__load__(tmp_file_path)
 
-            self.assertEqual(deserialized, c)
+            self.assertEqual(unpickled, c)
             
     @data
-    @serial(protocol=3)
-    class TestSerialClassProtocol3:
+    @pickled(protocol=3)
+    class TestPickledClassProtocol3:
         field1: Any
         
     @given(st.binary())
     @settings(max_examples=10)
-    def test_serial_protocol_4(self, b):
+    def test_pickled_protocol_4(self, b):
         with tempfile.TemporaryDirectory() as tmp_dir:
             tmp_file_path = os.path.join(tmp_dir, 'data.pickle')
 
-            c = self.TestSerialClassProtocol3(b)
+            c = self.TestPickledClassProtocol3(b)
             c.__dump__(tmp_file_path)
-            deserialized = self.TestSerialClassProtocol3.__load__(tmp_file_path)
+            unpickled = self.TestPickledClassProtocol3.__load__(tmp_file_path)
 
-            self.assertEqual(deserialized, c)
+            self.assertEqual(unpickled, c)

@@ -27,7 +27,7 @@ Project Lombok.
   - [General utility decorators](#general-utility-decorators)
     - [`@threaded`](#threaded)
     - [`@repeat`](#repeat)
-    - [`@serial`](#serial)
+    - [`@pickled`](#pickled)
   - [Benchmark decorators](#benchmark-decorators)
     - [`@timeit`](#timeit)
     - [`@access_counter`](#access_counter)
@@ -273,12 +273,12 @@ Hello world!
 Hello world!
 ```
 
-### @serial
-The `@serial` decorator adds `__dump__` and `__load__` to a class for pickling convenience.
+### @pickled
+The `@pickled` decorator adds `__dump__` and `__load__` to a class for pickling convenience.
 
 `__dump__` and `__load__` take in the target and source pickle file paths respectively.
 
-This decorator takes in an optional `protocol` argument (e.g. `@serial(protocol=5)`) specifiying the [pickling protocol](https://docs.python.org/3/library/pickle.html#data-stream-format). 
+This decorator takes in an optional `protocol` argument (e.g. `@pickled(protocol=5)`) specifiying the [pickle protocol](https://docs.python.org/3/library/pickle.html#data-stream-format). 
 
 #### Python
 
@@ -301,7 +301,7 @@ class Person:
 
 ```python3
 @data
-@serial(protocol=5)
+@pickled(protocol=5)
 class Person:
     name: str
 ```
