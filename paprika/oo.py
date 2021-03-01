@@ -83,7 +83,8 @@ def equals_and_hashcode(decorated_class):
         return same_class and same_attrs
 
     def __hash__(self):
-        attributes = tuple(sorted(tuple(getattr(self, "__dict__").keys())))
+        attributes = tuple([getattr(self, "__dict__")[key] for key in
+                            sorted(getattr(self, "__dict__").keys())])
         return hash(attributes)
 
     decorated_class.__hash__ = __hash__
