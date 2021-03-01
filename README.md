@@ -278,7 +278,7 @@ The `@pickled` decorator adds `__dump__` and `__load__` to a class for pickling 
 
 `__dump__` and `__load__` take in the target and source pickle file paths respectively.
 
-This decorator takes in an optional `protocol` argument (e.g. `@pickled(protocol=5)`) specifiying the [pickle protocol](https://docs.python.org/3/library/pickle.html#data-stream-format). 
+This decorator takes in an optional `protocol` argument (e.g. `@pickled(protocol=5)`) specifiying the [pickle protocol](https://docs.python.org/3/library/pickle.html#data-stream-format).
 
 #### Python
 
@@ -290,7 +290,7 @@ class Person:
     def __dump__(self, file_path):
         with open(file_path, "wb") as f:
             pickle_dump(self, f, protocol=5)
-        
+
     @staticmethod
     def __load__(file_path):
         with open(file_path, "rb") as f:
