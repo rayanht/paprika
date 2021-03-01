@@ -142,5 +142,5 @@ def hotspots(_func=None, *, n_runs=1, top_n=10):
 
 def profile(decorated_fn=None, *, n_runs=1, top_n=10):
     decorated_class = access_counter(decorated_fn)
-    decorated_class = hotspots(decorated_class)
+    decorated_class = hotspots(decorated_class, n_runs=n_runs, top_n=top_n)
     return decorated_class
