@@ -4,6 +4,8 @@ import tempfile
 from typing import Any
 from hypothesis import given, settings, strategies as st
 from paprika import data, NonNull, singleton, pickled
+
+
 class OOTestCases(unittest.TestCase):
     @data
     class TestClass:
@@ -49,24 +51,24 @@ class OOTestCases(unittest.TestCase):
     @settings(max_examples=10)
     def test_pickled(self, b):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_file_path = os.path.join(tmp_dir, 'data.pickle')
+            tmp_file_path = os.path.join(tmp_dir, "data.pickle")
 
             c = self.TestPickledClass(b)
             c.__dump__(tmp_file_path)
             unpickled = self.TestPickledClass.__load__(tmp_file_path)
 
             self.assertEqual(unpickled, c)
-            
+
     @data
     @pickled(protocol=3)
     class TestPickledClassProtocol3:
         field1: Any
-        
+
     @given(st.binary(min_size=100))
     @settings(max_examples=10)
     def test_pickled_protocol_4(self, b):
         with tempfile.TemporaryDirectory() as tmp_dir:
-            tmp_file_path = os.path.join(tmp_dir, 'data.pickle')
+            tmp_file_path = os.path.join(tmp_dir, "data.pickle")
 
             c = self.TestPickledClassProtocol3(b)
             c.__dump__(tmp_file_path)

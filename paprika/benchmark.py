@@ -62,7 +62,11 @@ def dispatch_access_counter_results(func, new_args, test_mode, test_handler):
         for arg in new_args
     ]
     print(
-        tabulate(perf_data, headers=["Arg Name", "nReads", "nWrites"], tablefmt="grid",)
+        tabulate(
+            perf_data,
+            headers=["Arg Name", "nReads", "nWrites"],
+            tablefmt="grid",
+        )
     )
 
 
