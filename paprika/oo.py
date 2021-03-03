@@ -15,7 +15,7 @@ def to_string(decorated_class):
             attr
             for attr in dir(self)
             if not attr.startswith("_")
-               and not (
+            and not (
                 hasattr(self.__dict__[attr], "__call__")
                 if attr in self.__dict__
                 else hasattr(decorated_class.__dict__[attr], "__call__")
@@ -34,8 +34,7 @@ def to_string(decorated_class):
 
 
 def collect_attributes(decorated_class):
-    attributes = [name for name in decorated_class.__dict__ if
-                  not name.startswith("_")]
+    attributes = [name for name in decorated_class.__dict__ if not name.startswith("_")]
     if "__annotations__" in decorated_class.__dict__:
         for attr_name in decorated_class.__dict__["__annotations__"]:
             if attr_name not in attributes:
@@ -47,15 +46,16 @@ def find_required_fields(decorated_class):
     return [
         F
         for F, T in decorated_class.__dict__["__annotations__"].items()
-        if "__origin__" in T.__dict__ and T.__dict__["__origin__"] == NonNull
+        if hasattr(T, "__dict__") \
+            and "__origin__" in T.__dict__ \
+            and T.__dict__["__origin__"] == NonNull
     ]
 
 
 def bind_fields(inst, fields, attributes, required_fields, kwargs=False):
     for attr_name, value in fields:
         if attr_name in required_fields and value is None:
-            raise ValueError(
-                f"Field {attr_name} is marked as non-null")
+            raise ValueError(f"Field {attr_name} is marked as non-null")
         if not kwargs or (kwargs and attr_name in attributes):
             setattr(inst, attr_name, value)
 
@@ -72,8 +72,7 @@ def constructor(decorated_class):
     required_fields = find_required_fields(decorated_class)
     attributes = collect_attributes(decorated_class)
 
-    decorated_class.__init__ = generate_generic_init(attributes,
-                                                     required_fields)
+    decorated_class.__init__ = generate_generic_init(attributes, required_fields)
     return decorated_class
 
 
@@ -114,9 +113,9 @@ def singleton(cls):
     return wrapper_singleton
 
 
-def serial(decorated_class=None, protocol=None):
+def pickled(decorated_class=None, protocol=None):
     def decorator(decorated_class):
-        def __dump__(self, file_path): 
+        def __dump__(self, file_path):
             with open(file_path, "wb") as f:
                 pickle.dump(self, f, protocol=protocol)
 
@@ -127,11 +126,10 @@ def serial(decorated_class=None, protocol=None):
 
         decorated_class.__dump__ = __dump__
         decorated_class.__load__ = __load__
-        
+
         return decorated_class
-        
+
     if decorated_class is not None:
         return decorator(decorated_class)
 
     return decorator
-

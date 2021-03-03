@@ -1,0 +1,23 @@
+name: Run Unit Tests
+on: [push, pull_request]
+jobs:
+  unittest:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-20.04]
+        python-version: ["3.8", "3.9"]
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@master
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: actions/checkout@v2
+      - name: Setup Poetry
+        uses: abatilo/actions-poetry@v2.1.0
+        with:
+          poetry-version: 1.1.4
+      - name: Install dependencies
+        run: poetry install
+      - name: Run unit tests
+        run: poetry run python -m unittest

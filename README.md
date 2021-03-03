@@ -27,7 +27,7 @@ Project Lombok.
   - [General utility decorators](#general-utility-decorators)
     - [`@threaded`](#threaded)
     - [`@repeat`](#repeat)
-    - [`@serial`](#serial)
+    - [`@pickled`](#pickled)
   - [Benchmark decorators](#benchmark-decorators)
     - [`@timeit`](#timeit)
     - [`@access_counter`](#access_counter)
@@ -273,12 +273,12 @@ Hello world!
 Hello world!
 ```
 
-### @serial
-The `@serial` decorator adds `__dump__` and `__load__` to a class for pickling convenience.
+### @pickled
+The `@pickled` decorator adds `__dump__` and `__load__` to a class for pickling convenience.
 
 `__dump__` and `__load__` take in the target and source pickle file paths respectively.
 
-This decorator takes in an optional `protocol` argument (e.g. `@serial(protocol=5)`) specifiying the [pickling protocol](https://docs.python.org/3/library/pickle.html#data-stream-format). 
+This decorator takes in an optional `protocol` argument (e.g. `@pickled(protocol=5)`) specifiying the [pickle protocol](https://docs.python.org/3/library/pickle.html#data-stream-format).
 
 #### Python
 
@@ -290,7 +290,7 @@ class Person:
     def __dump__(self, file_path):
         with open(file_path, "wb") as f:
             pickle_dump(self, f, protocol=5)
-        
+
     @staticmethod
     def __load__(file_path):
         with open(file_path, "rb") as f:
@@ -301,7 +301,7 @@ class Person:
 
 ```python3
 @data
-@serial(protocol=5)
+@pickled(protocol=5)
 class Person:
     name: str
 ```
@@ -519,9 +519,22 @@ Still alive!
 
 ## Contributing
 
+### Issues
+
 Encountered a bug? Have an idea for a new feature? This project is open to all
 sorts of contribution! Feel free to head to the `Issues` tab and describe your
 request!
+
+### Development Setup
+
+This project requires [poetry](https://github.com/python-poetry/poetry).
+
+#### Recommended Steps
+1. Initialize a virtual environment: `python -m venv .env`
+2. Enter your virtual environment.
+3. Install poetry: `pip install poetry`.
+4. Install dependencies: `poetry install`.
+5. Initialize pre-commit: `pre-commit install`.
 
 ## Authors
 
@@ -535,4 +548,4 @@ participated in this project.
 ## License
 
 This project is licensed under the MIT License - see
-the [LICENSE.md](LICENSE.md) file for details
+the [LICENSE](LICENSE) file for details
